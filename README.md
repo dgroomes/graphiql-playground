@@ -27,9 +27,7 @@ The sub-projects include:
 
 ### `basic/`
 
-NOT YET IMPLEMENTED
-
-A basic GraphiQL project which is architected the "CDN way".
+A basic GraphiQL project that fronts the `graphql-pokemon` project's GraphQL API.
 
 See the README in [basic/](basic/).
 
@@ -38,9 +36,8 @@ See the README in [basic/](basic/).
 
 General clean-ups, TODOs and things I wish to implement for this project:
 
-* [ ] Create a `basic` example project that is a minimal GraphiQL setup using JS. Maybe do the CDN approach?
-* [ ] Create a `typescript` example project that is a minimal GraphiQL setup using TypeScript. This will require a
-  build tool.
+* [x] DONE Create a `basic` example project that is a minimal GraphiQL setup. It uses JS (update: well whatever, I'm going to use TypeScript). It doesn't customize anything.
+  Maybe query the GitHub GraphQL API? Use esbuild.
 * [ ] Create a deconstructed example which exposes some pre-built queries and shows the results in a bespoke summary
   view (instead of JSON). This works if the queries are fixed (exact known shape of the data) and so the summary view
   can also be fixed. Maybe use the GitHub GraphQL API as an example and show a summary of my repos.  
