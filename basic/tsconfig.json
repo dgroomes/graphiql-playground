@@ -1,8 +1,4 @@
 /*
-The 'tsconfig.json' file is actually interpreted as a 'jsonc' ("JSON with comments") file so we are allowed to write
-comments! This is great because we can explain why we're using otherwise esoteric configurations. At least, comments are
-useful to people who haven't mastered TypeScript (which is the vast majority of developers, including myself).
-
 See the official reference documentation for tsconfig: https://www.typescriptlang.org/tsconfig
 */
 

@@ -24,7 +24,12 @@ Follow these instructions to build and serve the program:
 
 General clean ups, todos and things I wish to implement for this project:
 
-* [ ] How can I bundle the CSS? I don't want to version control the GraphiQL CSS. 
+* [x] DONE How can I bundle/copy the external GraphiQL CSS? I don't want to version control the GraphiQL CSS.
+  Alternatively, what if I include all of GrahipQL and its dependencies as normal script tags? Can I just bundle my
+  source? It's annoying to do the dependency research manually but once I do it, it's done and npm won't complain about
+  peer deps plus npm install and npm start will be faster (less steps). UPDATE: no, it's hard to use React using modern
+  browser standards because React isn't distributed as an ES module (even though it doesn't have dependencies, so I
+  don't get what the hold up is?)
 
 
 ## Reference

@@ -8,7 +8,7 @@
     "graphql": "16.6.0"
   },
   "scripts": {
-    "start": "esbuild src/app.tsx --servedir=www --outdir=www/js --bundle --serve=[::1]:8000"
+    "start": "node serve.mjs"
   },
   "devDependencies": {
     "@types/react": "18.0.28",
