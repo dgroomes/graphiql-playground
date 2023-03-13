@@ -21,7 +21,8 @@ const ctx = await esbuild.context({
     ],
     platform: 'browser',
     outdir: 'www',
-    bundle: true
+    bundle: true,
+    sourcemap: "linked"
 });
 
 const {host, port} = await ctx.serve({

@@ -16,7 +16,7 @@ Follow these instructions to build and serve the program:
       npm start
       ```
 3. Open the browser
-    * Open <http://[::1]:8000>
+    * Open <http://[::1]:8080>
     * Click around the UI and iterate!
 
 
