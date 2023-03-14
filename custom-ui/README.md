@@ -34,7 +34,8 @@ Follow these instructions to build and serve the program:
 General clean ups, todos and things I wish to implement for this project:
 
 * [x] DONE Scaffold the project
-* [ ] Prompt for an access token
+* [ ] IN PROGRESS Prompt for an access token. Validate the access token with a request to the GitHub API. Give
+  informational UI feedback.
 * [ ] Query for the current user's login (assuming the token is a user token)
 * [ ] Query (search) for the current user's repositories. Harcode to a 100 limit (which is a limit of the API; then
   you'll need pagination)
