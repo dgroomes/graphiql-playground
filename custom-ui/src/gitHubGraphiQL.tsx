@@ -49,8 +49,8 @@ export default function GitHubGraphiQL() {
                     return res.json()
                 })
                 .then(data => {
-                    // For effect, let's purposely delay the response by 2 seconds.
-                    return new Promise(resolve => setTimeout(() => resolve(data), 2000))
+                    // For effect, let's purposely delay the response by a bit.
+                    return new Promise(resolve => setTimeout(() => resolve(data), 1500))
                 })
                 .then(function (data) {
                     if (!isMounted) {
@@ -128,9 +128,11 @@ export default function GitHubGraphiQL() {
 }
 `
 
-    // TODO: Incorporate personal access token.
     const fetcher = createGraphiQLFetcher({
         url: 'https://api.github.com/graphql',
+        headers: {
+            Authorization: `bearer ${token}`
+        }
     })
 
     return (<>
