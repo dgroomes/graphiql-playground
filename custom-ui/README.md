@@ -49,3 +49,8 @@ General clean ups, todos and things I wish to implement for this project:
 
 * [GitHub GraphQL API](https://docs.github.com/en/graphql)
 * [GitHub docs: *Search within a user's or organization's repositories*](https://docs.github.com/en/search-github/searching-on-github/searching-for-repositories#search-within-a-users-or-organizations-repositories)
+* [MDN docs: *AbortController*](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
+  * I just stumbled on this interesting, modern API. I'm tempted to write my `useEffect` invocations to use it and also
+    the 'unmounted' check to do things "the right way". I think I am going to do this. Now, I'm realizing this should
+    really be in my `react-playground` repo but for now it's ok. Progress. Functional programming is nice but hey we
+    have tons of I/O and stateful stuff.

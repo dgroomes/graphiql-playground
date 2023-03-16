@@ -1,21 +1,80 @@
-import React, {useState} from 'react';
-import GraphiQL from 'graphiql';
-import {createGraphiQLFetcher} from '@graphiql/toolkit';
-import {Alert, Button, Input, Space, Spin} from "antd";
+import React, {useEffect, useState} from 'react'
+import GraphiQL from 'graphiql'
+import {createGraphiQLFetcher} from '@graphiql/toolkit'
+import {Alert, Button, Input, Space, Spin} from "antd"
 
 /**
  * This is one of the main components. I need to extract some of this into smaller components/hooks. I want to use the
  * "Main" component as the actual main component.
  *
- * This component has some logic to request/validate a GitHub personal access token.
+ * This component has some (gnarly) logic to request/validate a GitHub personal access token.
  */
 export default function GitHubGraphiQL() {
-
     const [tokenButtonPressed, setTokenButtonPressed] = useState(false)
-    // Note: I should use more of a state machine to track: "not pressed", "pressed", "validating", "validated", "invalid"
+    // Note: I should use more of a typed state machine to track: "not pressed", "pressed", "validating", "validated", "invalid"
     // but I won't for now.
     const [valid, setValid] = useState<boolean>(null)
     const [token, setToken] = useState<string>(null)
+    const [login, setLogin] = useState<string>(null)
+    // I would love to extract the mechanical unmount cleanup and request aborting stuff into a hook. I believe this is
+    // done in libraries like react-query and axios-hooks.
+    useEffect(() => {
+        if (tokenButtonPressed && valid === null) {
+            const query = `
+  query {
+    viewer {
+      login
+    }
+  }
+`
+
+            const controller = new AbortController()
+            const signal = controller.signal
+            const options = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `bearer ${token}`
+                },
+                body: JSON.stringify({query}),
+                signal
+            }
+
+            let isMounted = true
+
+            console.log("Sending request to GitHub API...")
+            fetch("https://api.github.com/graphql", options)
+                .then(res => {
+                    // todo handle failures
+                    return res.json()
+                })
+                .then(data => {
+                    // For effect, let's purposely delay the response by 2 seconds.
+                    return new Promise(resolve => setTimeout(() => resolve(data), 2000))
+                })
+                .then(function (data) {
+                    if (!isMounted) {
+                        console.log("Component is no longer mounted. Short-circuiting the setLogin() call.")
+                        return
+                    }
+                    if (signal.aborted) {
+                        console.log("Request was aborted. Short-circuiting the setLogin() call.")
+                        return
+                    }
+
+                    const login = data["data"]["viewer"]["login"]
+                    console.log(`GitHub login: ${login}`)
+                    setLogin(login)
+                    setValid(true)
+                })
+
+            // Remember, this is a "clean up" function. It is called when the component is unmounted.
+            return () => {
+                isMounted = false
+                controller.abort()
+            }
+        }
+    }, [tokenButtonPressed, valid])
 
     if (valid === false) {
         return (<Alert
@@ -35,12 +94,6 @@ export default function GitHubGraphiQL() {
                 placeholder="Validating token..."
             />
             <Spin/>
-            <Alert
-                message="TODO"
-                description="The token validation has not been implemented yet."
-                type="info"
-                showIcon
-            />
         </Space>)
     }
 
@@ -75,10 +128,10 @@ export default function GitHubGraphiQL() {
 }
 `
 
-    // TODO: Requests to the API won't work until we incorporate personal access token.
+    // TODO: Incorporate personal access token.
     const fetcher = createGraphiQLFetcher({
         url: 'https://api.github.com/graphql',
-    });
+    })
 
     return (<>
         <Alert
