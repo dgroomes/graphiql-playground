@@ -7,19 +7,14 @@ import {Alert, Button, Input, Space, Spin} from "antd"
  * This is one of the main components. I need to extract some of this into smaller components/hooks. I want to use the
  * "Main" component as the actual main component.
  *
- * This component has some (gnarly) logic to request/validate a GitHub personal access token.
+ * This component has some logic to request/validate a GitHub personal access token.
  */
 export default function GitHubGraphiQL() {
-    const [tokenButtonPressed, setTokenButtonPressed] = useState(false)
-    // Note: I should use more of a typed state machine to track: "not pressed", "pressed", "validating", "validated", "invalid"
-    // but I won't for now.
-    const [valid, setValid] = useState<boolean>(null)
-    const [token, setToken] = useState<string>(null)
-    const [login, setLogin] = useState<string>(null)
+    const [token, setToken] = useState<TokenState>('empty')
     // I would love to extract the mechanical unmount cleanup and request aborting stuff into a hook. I believe this is
     // done in libraries like react-query and axios-hooks.
     useEffect(() => {
-        if (tokenButtonPressed && valid === null) {
+        if (typeof token === 'object' && token.kind === "entered") {
             const query = `
   query {
     viewer {
@@ -34,7 +29,7 @@ export default function GitHubGraphiQL() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `bearer ${token}`
+                    Authorization: `bearer ${token.token}`
                 },
                 body: JSON.stringify({query}),
                 signal
@@ -45,7 +40,14 @@ export default function GitHubGraphiQL() {
             console.log("Sending request to GitHub API...")
             fetch("https://api.github.com/graphql", options)
                 .then(res => {
-                    // todo handle failures
+                    if (res.status == 401) {
+                        console.log("GitHub API responded with 401 Unauthorized. The token is invalid.")
+                        setToken({
+                            kind: "invalid",
+                            token: token.token
+                        })
+                        return Promise.reject()
+                    }
                     return res.json()
                 })
                 .then(data => {
@@ -62,10 +64,14 @@ export default function GitHubGraphiQL() {
                         return
                     }
 
+                    // @ts-ignore
                     const login = data["data"]["viewer"]["login"]
                     console.log(`GitHub login: ${login}`)
-                    setLogin(login)
-                    setValid(true)
+                    setToken({
+                        kind: "valid",
+                        token: token.token,
+                        login: login
+                    })
                 })
 
             // Remember, this is a "clean up" function. It is called when the component is unmounted.
@@ -74,46 +80,62 @@ export default function GitHubGraphiQL() {
                 controller.abort()
             }
         }
-    }, [tokenButtonPressed, valid])
+    }, [token])
 
-    if (valid === false) {
-        return (<Alert
-            message="Error"
-            description="This token is invalid according to the GitHub API. Please double check your token."
-            type="error"
-            showIcon
-        />)
-    }
-
-    if (tokenButtonPressed && valid === null) {
-        return (<Space direction="horizontal">
-            <Input.Password
-                readOnly={true}
-                disabled={true}
-                visibilityToggle={false}
-                placeholder="Validating token..."
-            />
-            <Spin/>
-        </Space>)
-    }
-
-    if (!tokenButtonPressed) {
+    // Well, I refactored this to be more "algebraic data types"-like but the nesting is a bit much and so is the
+    // duplicated input/button stuff.
+    if (token === 'empty') {
         return (<Space direction="horizontal">
             <Input.Password
                 placeholder="input GitHub personal access token"
                 visibilityToggle={false}
                 onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setToken(e.target.value)
+                    setToken({
+                        kind: "partial",
+                        token: e.target.value
+                    })
                 }}
             />
-            <Button onClick={() => setTokenButtonPressed(true)}>
-                Submit
-            </Button>
+            <Button disabled={true}> Submit</Button>
         </Space>)
-    }
+    } else {
 
+        if (token.kind === "invalid") {
+            return (<Alert
+                message="Error"
+                description="This token is invalid according to the GitHub API. Please double check your token."
+                type="error"
+                showIcon
+            />)
+        } else if (token.kind === 'validating') {
+            return (<Space direction="horizontal">
+                <Input.Password
+                    readOnly={true}
+                    disabled={true}
+                    visibilityToggle={false}
+                    placeholder="Validating token..."
+                />
+                <Spin/>
+            </Space>)
+        } else if (token.kind === 'partial') {
+            return (<Space direction="horizontal">
+                <Input.Password
+                    placeholder="input GitHub personal access token"
+                    visibilityToggle={false}
+                    onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setToken({
+                            kind: "partial",
+                            token: e.target.value
+                        })
+                    }}
+                />
+                <Button onClick={() => setToken({kind: 'entered', token: token.token})}>
+                    Submit
+                </Button>
+            </Space>)
+        } else {
 
-    const defaultQuery = `
+            const defaultQuery = `
 {
     search(query: "user:dgroomes", type: REPOSITORY, first: 100) {
         repositoryCount
@@ -127,22 +149,23 @@ export default function GitHubGraphiQL() {
     }
 }
 `
+            const fetcher = createGraphiQLFetcher({
+                url: 'https://api.github.com/graphql',
+                headers: {
+                    Authorization: `bearer ${token}`
+                }
+            })
 
-    const fetcher = createGraphiQLFetcher({
-        url: 'https://api.github.com/graphql',
-        headers: {
-            Authorization: `bearer ${token}`
+            return (<>
+                <Alert
+                    message="TODO"
+                    description="The token was validated, but the rest of the application has not been implemented yet."
+                    type="info"
+                    showIcon
+                />
+                <GraphiQL fetcher={fetcher} defaultQuery={defaultQuery}/>
+            </>)
         }
-    })
-
-    return (<>
-        <Alert
-            message="TODO"
-            description="The token was validated, but the rest of the application has not been implemented yet."
-            type="info"
-            showIcon
-        />
-        <GraphiQL fetcher={fetcher} defaultQuery={defaultQuery}/>
-    </>)
+    }
 }
 

@@ -15,7 +15,7 @@ See the official reference documentation for tsconfig: https://www.typescriptlan
     "esModuleInterop": true,
     // The TypeScript toolchain needs to know we are targeting React in the browser.
     "jsx": "react",
-
+    "strictNullChecks": true,
     // We are targeting the browser.
     "lib": ["DOM", "DOM.Iterable", "ESNext"]
   }
