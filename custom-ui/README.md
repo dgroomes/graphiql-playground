@@ -38,9 +38,9 @@ General clean ups, todos and things I wish to implement for this project:
   informational UI feedback.
 * [x] DONE Query for the current user's login (assuming the token is a user token)
 * [x] DONE (I like it very much) Model the PAT using some kind of types. I want to model the state machine a lot more cleanly than the mess of
-  `useState` and nullability I have now. 
-* [ ] Abstract the token input/storage into a hook (and/or a component?)
-* [ ] Abstract the token validation into a hook (and/or a component?)
+  `useState` and nullability I have now.
+* [ ] Abstract the token input/storage into a component
+* [x] DONE Abstract the token validation into a hook
 * [ ] Query (search) for the current user's repositories. Harcode to a 100 limit (which is a limit of the API; then
   you'll need pagination)
 * [ ] Query (get) the metadata for each of the repositories
