@@ -1,4 +1,5 @@
-import {Dispatch, SetStateAction, useEffect, useState} from "react";
+import {Dispatch, SetStateAction, useState} from "react";
+import {useFetch} from "./useFetch";
 
 /**
  * A custom React hook for storing and validating a GitHub personal access token.
@@ -7,79 +8,72 @@ import {Dispatch, SetStateAction, useEffect, useState} from "react";
  */
 export function useToken(): [TokenState, Dispatch<SetStateAction<TokenState>>] {
     const [token, setToken] = useState<TokenState>('empty')
-    useEffect(() => {
-        if (typeof token === 'object' && token.kind === "entered") {
-            const query = `
+
+    let fetchParams: { input: RequestInfo | URL, init?: RequestInit } | undefined
+
+    if (typeof token === 'object' && token.kind === "entered") {
+        const query = `
   query {
     viewer {
       login
     }
   }
 `
-            // Note: I would love to extract the mechanical unmount cleanup and request aborting stuff away. I believe this is
-            // done in libraries like react-query and axios-hooks.
-            const controller = new AbortController()
-            const signal = controller.signal
-            const options = {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `bearer ${token.token}`
-                },
-                body: JSON.stringify({query}),
-                signal
-            }
-
-            let state = {isMounted: true}
-
-            const asyncWork = async function () {
-                console.log("Sending request to GitHub API...")
-                const res = await fetch("https://api.github.com/graphql", options)
-
-                if (res.status == 401) {
-                    console.log("GitHub API responded with 401 Unauthorized. The token is invalid.")
-                    setToken({
-                        kind: "invalid",
-                        token: token.token
-                    })
-                    return Promise.reject()
-                }
-                const data = await res.json()
-                // For effect, let's purposely delay the response by a bit.
-                await new Promise(resolve => setTimeout(() => resolve(data), 1500))
-
-                if (!state) {
-                    console.log("Component is no longer mounted. Short-circuiting the token validation work.")
-                    return
-                }
-                if (signal.aborted) {
-                    console.log("Request was aborted. Short-circuiting the token validation work.")
-                    return
-                }
-
-                // @ts-ignore
-                const login = data["data"]["viewer"]["login"]
-                console.log(`GitHub login: ${login}`)
-                setToken({
-                    kind: "valid",
-                    token: token.token,
-                    login: login
-                })
-            }
-
-            // noinspection JSIgnoredPromiseFromCall
-            asyncWork()
-
-            // Remember, this is a "clean up" function. It is called when the component is unmounted.
-            return () => {
-                state.isMounted = false
-                controller.abort()
-            }
+        const options = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `bearer ${token.token}`
+            },
+            body: JSON.stringify({query}),
         }
-    }, [token])
 
+        fetchParams = {input: "https://api.github.com/graphql", init: options}
+    }
+
+
+    const fetched = useFetch(fetchParams)
+
+    if (fetched === 'in-flight') {
+        console.log("The 'useToken' hook is in-flight. Returning the token.")
+        return [token, setToken];
+    }
+
+    if (fetched === 'untriggered') {
+        console.log("The 'useToken' hook is untriggered. Returning the token.")
+        return [token, setToken];
+    }
+
+    if (typeof token !== 'object' || token.kind !== "entered") {
+        // This is nasty. I'm having difficulty composing my code with 'useEffect'. It's hard to satisfy the requirement of "hooks must be called at the top level and never in a conditional".
+        throw new Error("This should never happen. The token should be an object with kind 'entered' at this point.")
+    }
+
+    if (fetched instanceof Error) {
+        setToken({
+            kind: "invalid",
+            token: token.token
+        })
+        return [token, setToken];
+    }
+
+
+    const {response, json} = fetched
+
+    if (response.status == 401) {
+        console.log("GitHub API responded with 401 Unauthorized. The token is invalid.")
+        setToken({
+            kind: "invalid",
+            token: token.token
+        })
+    }
+
+    const login = json["data"]["viewer"]["login"]
+    console.log(`GitHub login: ${login}`)
+    setToken({
+        kind: "valid",
+        token: token.token,
+        login: login
+    })
     return [token, setToken];
 }
-
-
-

@@ -83,7 +83,7 @@ export default function GitHubGraphiQL() {
             const fetcher = createGraphiQLFetcher({
                 url: 'https://api.github.com/graphql',
                 headers: {
-                    Authorization: `bearer ${token}`
+                    Authorization: `bearer ${token.token}`
                 }
             })
 
