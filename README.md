@@ -13,14 +13,14 @@ GraphiQL is a rich and actively-developed toolkit for creating GraphQL tooling u
 JavaScript. I want to learn more about it, and this repository is a place for me to do that.
 
 
-## Standalone sub-projects
+## Standalone subprojects
 
-This repository illustrates different concepts, patterns and examples via standalone sub-projects. Each sub-project is
+This repository illustrates different concepts, patterns and examples via standalone subprojects. Each sub-project is
 completely independent of the others and do not depend on the root project. This _standalone sub-project constraint_
-forces the sub-projects to be complete and maximizes the reader's chances of successfully running, understanding, and
+forces the subprojects to be complete and maximizes the reader's chances of successfully running, understanding, and
 re-using the code.
 
-The sub-projects include:
+The subprojects include:
 
 
 ### `basic/`
@@ -30,20 +30,13 @@ A basic GraphiQL project that fronts the `graphql-pokemon` project's GraphQL API
 See the README in [basic/](basic/).
 
 
-### `custom-ui/`
-
-A custom interface built from individual components of the GraphiQL library.
-
-See the README in [custom-ui/](custom-ui/).
-
-
 ## Wish List
 
 General clean-ups, TODOs and things I wish to implement for this project:
 
 * [x] DONE Create a `basic` example project that is a minimal GraphiQL setup. It uses JS (update: well whatever, I'm going to use TypeScript). It doesn't customize anything.
   Maybe query the GitHub GraphQL API? Use esbuild.
-* [ ] IN PROGRESS Create a deconstructed example which exposes some pre-built queries and shows the results in a bespoke summary
+ * [ ] ABANDONED (I had started `custom-ui` and make it into something but it's moved to its own repo [my-github-explorer](https://github.com/dgroomes/my-github-explorer)) Create a deconstructed example which exposes some pre-built queries and shows the results in a bespoke summary
   view (instead of JSON). This works if the queries are fixed (exact known shape of the data) and so the summary view
   can also be fixed. Maybe use the GitHub GraphQL API as an example and show a summary of my repos.  
 
